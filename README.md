@@ -35,8 +35,6 @@
 2. 执行 `Compile Design`。
 3. 使用 Programmer 下载生成的 `.sof` 文件。
 
-比赛计分系统对应工程为 `Game/game_score.qpf`。
-
 ### 运行 WiFi 监控程序
 
 FPGA 下载并上电后，电脑连接 ESP8266 热点：
