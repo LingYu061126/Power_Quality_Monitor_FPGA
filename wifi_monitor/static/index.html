@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>电能质量监控台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      --ink: #17202a;
+      --muted: #66717d;
+      --line: #d8dde3;
+      --panel: #ffffff;
+      --page: #f3f5f7;
+      --green: #16835f;
+      --red: #c33b32;
+      --blue: #2767b1;
+      --amber: #a86912;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--ink); font-size: 14px; }
+    header { background: #20262d; color: white; border-bottom: 4px solid #2b9b72; }
+    .header-inner, main { width: min(1440px, calc(100% - 32px)); margin: 0 auto; }
+    .header-inner { min-height: 66px; display: flex; align-items: center; gap: 18px; }
+    h1 { margin: 0; font-size: 21px; font-weight: 650; letter-spacing: 0; }
+    .header-status { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .badge { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 9px; border: 1px solid #5b6671; border-radius: 4px; font-size: 12px; }
+    .badge.good { background: #e8f6f0; border-color: #88c9ae; color: #075b40; }
+    .badge.bad { background: #fff0ef; border-color: #e4a19b; color: #8d1e18; }
+    .badge.wait { background: #fff7e7; border-color: #d9b777; color: #6c4506; }
+    button, .button { height: 32px; border: 1px solid #89939d; border-radius: 4px; background: white; color: #1d2731; padding: 0 12px; font: inherit; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    button:hover, .button:hover { background: #edf1f4; }
+    main { padding: 20px 0 36px; }
+    .view-toolbar { min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin-bottom: 12px; background: #e4e8eb; border: 1px solid #cbd2d8; }
+    .segmented { display: inline-flex; border: 1px solid #8d969f; border-radius: 4px; overflow: hidden; flex: 0 0 auto; }
+    .segmented button { border: 0; border-right: 1px solid #8d969f; border-radius: 0; }
+    .segmented button:last-child { border-right: 0; }
+    .segmented button.active { background: #26313b; color: white; }
+    .history-controls { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; }
+    .history-controls select { height: 32px; min-width: 230px; max-width: 390px; border: 1px solid #89939d; border-radius: 4px; background: white; padding: 0 8px; }
+    .icon-button { width: 34px; padding: 0; justify-content: center; font-size: 16px; }
+    .replay-range { flex: 1 1 260px; min-width: 130px; }
+    .speed-select { height: 32px; border: 1px solid #89939d; border-radius: 4px; background: white; }
+    .position { min-width: 90px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+    .toolbar-spacer { flex: 1 1 auto; }
+    [hidden] { display: none !important; }
+    .metrics { display: grid; grid-template-columns: repeat(6, minmax(120px, 1fr)); border: 1px solid var(--line); background: var(--panel); }
+    .metric { min-height: 96px; padding: 14px 16px; border-right: 1px solid var(--line); }
+    .metric:last-child { border-right: 0; }
+    .metric-label { color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+    .metric-value { font-size: 28px; font-variant-numeric: tabular-nums; line-height: 1; }
+    .metric-unit { color: var(--muted); font-size: 12px; margin-left: 4px; }
+    .metric-raw { color: var(--muted); font-size: 11px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+    .status-strip { display: grid; grid-template-columns: repeat(8, minmax(90px, 1fr)); margin-top: 12px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: #e9edf0; }
+    .status-item { padding: 10px 12px; border-right: 1px solid #cdd3d9; min-width: 0; }
+    .status-item:last-child { border-right: 0; }
+    .status-key { display: block; color: var(--muted); font-size: 11px; margin-bottom: 3px; }
+    .status-value { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    section { margin-top: 22px; }
+    h2 { margin: 0 0 10px; font-size: 15px; font-weight: 650; }
+    .chart-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 12px; }
+    .chart-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; min-width: 0; }
+    .chart-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--muted); }
+    .legend { display: flex; gap: 12px; }
+    .legend span::before { content: ""; display: inline-block; width: 14px; height: 3px; margin: 0 5px 3px 0; background: var(--legend-color); }
+    canvas { display: block; width: 100%; height: 220px; }
+    .timeline-panel canvas { height: 110px; }
+    .timeline-legend { display: flex; gap: 16px; color: var(--muted); font-size: 11px; margin-top: 8px; }
+    .timeline-legend span::before { content: ""; display: inline-block; width: 13px; height: 7px; margin-right: 5px; background: var(--legend-color); }
+    .table-wrap { border: 1px solid var(--line); background: var(--panel); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+    th, td { padding: 9px 11px; border-bottom: 1px solid #e1e5e9; text-align: left; white-space: nowrap; }
+    th { background: #e9edf0; color: #4f5a65; font-size: 12px; font-weight: 600; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .empty { color: var(--muted); text-align: center; padding: 28px; }
+    .ok-text { color: var(--green); }
+    .alarm-text { color: var(--red); font-weight: 650; }
+    @media (max-width: 1000px) {
+      .metrics { grid-template-columns: repeat(3, 1fr); }
+      .metric:nth-child(3) { border-right: 0; }
+      .metric:nth-child(-n+3) { border-bottom: 1px solid var(--line); }
+      .status-strip { grid-template-columns: repeat(4, 1fr); }
+      .status-item:nth-child(4) { border-right: 0; }
+      .chart-grid { grid-template-columns: 1fr; }
+      .view-toolbar, .history-controls { flex-wrap: wrap; }
+      .history-controls select { flex: 1 1 240px; max-width: none; }
+    }
+    @media (max-width: 600px) {
+      .header-inner, main { width: min(100% - 20px, 1440px); }
+      .header-inner { align-items: flex-start; padding: 12px 0; }
+      .header-status { gap: 6px; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .metric:nth-child(2n) { border-right: 0; }
+      .metric:nth-child(-n+4) { border-bottom: 1px solid var(--line); }
+      .status-strip { grid-template-columns: repeat(2, 1fr); }
+      .status-item:nth-child(2n) { border-right: 0; }
+      h1 { font-size: 18px; }
+      .position { min-width: 70px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>电能质量监控台</h1>
+      <div class="header-status">
+        <span id="connection" class="badge wait">等待连接</span>
+        <span id="runBadge" class="badge wait">暂停</span>
+        <a class="button" href="/api/csv">导出 CSV</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="view-toolbar">
+      <div class="segmented" role="tablist" aria-label="数据视图">
+        <button id="liveMode" class="active" type="button">实时监控</button>
+        <button id="historyMode" type="button">历史回放</button>
+      </div>
+      <div id="historyControls" class="history-controls" hidden>
+        <select id="sessionSelect" aria-label="历史会话"></select>
+        <button id="loadSession" type="button">载入</button>
+        <button id="playReplay" class="icon-button" type="button" title="播放">▶</button>
+        <input id="replayRange" class="replay-range" type="range" min="0" max="0" value="0" aria-label="回放位置">
+        <select id="replaySpeed" class="speed-select" aria-label="回放速度">
+          <option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option>
+        </select>
+        <span id="replayPosition" class="position">0 / 0</span>
+      </div>
+      <span class="toolbar-spacer"></span>
+      <button id="openReport" type="button">故障报告</button>
+    </div>
+
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">RMS电压</div><span id="rms" class="metric-value">---</span><span class="metric-unit">V</span><div id="rmsRaw" class="metric-raw">原始码 ---</div></div>
+      <div class="metric"><div class="metric-label">Peak电压</div><span id="peak" class="metric-value">---</span><span class="metric-unit">V</span><div id="peakRaw" class="metric-raw">原始码 ---</div></div>
+      <div class="metric"><div class="metric-label">频率</div><span id="freq" class="metric-value">---</span><span class="metric-unit">Hz</span></div>
+      <div class="metric"><div class="metric-label">ADC瞬时电压</div><span id="adc" class="metric-value">---</span><span class="metric-unit">V</span><div id="adcRaw" class="metric-raw">原始码 ---</div></div>
+      <div class="metric"><div class="metric-label">运行时间</div><span id="sysTime" class="metric-value">----</span><span class="metric-unit">s</span></div>
+      <div class="metric"><div class="metric-label">事件计数</div><span id="eventCount" class="metric-value">--</span></div>
+    </div>
+
+    <div class="status-strip">
+      <div class="status-item"><span class="status-key">故障类型</span><span id="fault" class="status-value">--</span></div>
+      <div class="status-item"><span class="status-key">注入模式</span><span id="mode" class="status-value">--</span></div>
+      <div class="status-item"><span class="status-key">冻结</span><span id="freeze" class="status-value">--</span></div>
+      <div class="status-item"><span class="status-key">报警</span><span id="alarm" class="status-value">--</span></div>
+      <div class="status-item"><span class="status-key">帧序号</span><span id="sequence" class="status-value">---</span></div>
+      <div class="status-item"><span class="status-key">校验错误</span><span id="checksumErrors" class="status-value">0</span></div>
+      <div class="status-item"><span class="status-key">丢失帧</span><span id="missingFrames" class="status-value">0</span></div>
+      <div class="status-item"><span class="status-key">有效/接收</span><span id="frameCounts" class="status-value">0 / 0</span></div>
+    </div>
+
+    <section>
+      <h2 id="trendTitle">实时趋势</h2>
+      <div class="chart-grid">
+        <div class="chart-panel">
+          <div class="chart-title"><span>交流幅值 / V</span><span class="legend"><span style="--legend-color:#2767b1">RMS</span><span style="--legend-color:#c33b32">Peak</span></span></div>
+          <canvas id="amplitudeChart"></canvas>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-title"><span>频率</span><span class="legend"><span style="--legend-color:#16835f">Hz</span></span></div>
+          <canvas id="frequencyChart"></canvas>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-title"><span>ADC输入 / V</span><span class="legend"><span style="--legend-color:#a86912">瞬时电压</span></span></div>
+          <canvas id="adcChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>故障时间轴</h2>
+      <div class="chart-panel timeline-panel">
+        <canvas id="timelineChart"></canvas>
+        <div class="timeline-legend">
+          <span style="--legend-color:#c33b32">故障</span>
+          <span style="--legend-color:#a86912">暂停</span>
+          <span style="--legend-color:#2767b1">冻结</span>
+          <span style="--legend-color:#17202a">回放位置</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>状态变更与故障记录</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>电脑时间</th><th>序号</th><th>系统时间</th><th>状态</th><th>故障</th><th>RMS(V)</th><th>Peak(V)</th><th>频率(Hz)</th><th>持续时间</th></tr></thead>
+          <tbody id="eventRows"><tr><td colspan="9" class="empty">暂无状态变更</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const faultNames = ["正常", "暂降", "暂升", "过频", "欠频", "削顶", "谐波畸变"];
+    const liveHistory = [];
+    const liveEvents = [];
+    let replayData = [];
+    let replayEvents = [];
+    let replayIndex = 0;
+    let replayTimer = null;
+    let viewMode = "live";
+    let lastId = 0;
+    let currentSessionId = null;
+    let lastStatus = null;
+
+    const el = id => document.getElementById(id);
+    const setText = (id, value) => { el(id).textContent = value; };
+
+    function updateBadges(status, sample) {
+      const connection = el("connection");
+      connection.textContent = status.connection;
+      connection.className = "badge " + (status.connection === "已连接" || status.connection === "演示模式" ? "good" : status.connection === "正在连接" ? "wait" : "bad");
+      if (sample) {
+        const run = el("runBadge");
+        run.textContent = sample.running ? "运行" : "暂停";
+        run.className = "badge " + (sample.running ? "good" : "wait");
+      }
+    }
+
+    function stateChanged(sample, previous) {
+      return !previous || sample.fault_type !== previous.fault_type || sample.alarm !== previous.alarm || sample.freeze !== previous.freeze || sample.running !== previous.running;
+    }
+
+    function renderEvents(entries) {
+      const rows = el("eventRows");
+      if (!entries.length) {
+        rows.innerHTML = '<tr><td colspan="9" class="empty">暂无状态变更</td></tr>';
+        return;
+      }
+      rows.innerHTML = entries.slice(0, 50).map(entry => {
+        const item = entry.sample || entry;
+        const state = item.running ? "运行" : "暂停";
+        const fault = faultNames[item.fault_type] || `未知(${item.fault_type})`;
+        return `<tr><td>${item.pc_time.replace("T", " ").slice(0, 23)}</td><td>${String(item.seq).padStart(3, "0")}</td><td>${item.system_time}</td><td>${state}${item.freeze ? " / 冻结" : ""}${item.alarm ? " / 报警" : ""}</td><td class="${item.fault_type ? "alarm-text" : "ok-text"}">${fault}</td><td>${item.rms_volts.toFixed(3)}</td><td>${item.peak_volts.toFixed(3)}</td><td>${item.freq}</td><td>${item.duration}s</td></tr>`;
+      }).join("");
+    }
+
+    function showSample(sample) {
+      if (!sample) return;
+      setText("rms", sample.rms_volts.toFixed(3));
+      setText("peak", sample.peak_volts.toFixed(3));
+      setText("freq", sample.freq);
+      setText("adc", sample.adc_volts.toFixed(3));
+      setText("rmsRaw", `原始码 ${String(sample.rms).padStart(3, "0")}`);
+      setText("peakRaw", `原始码 ${String(sample.peak).padStart(3, "0")}`);
+      setText("adcRaw", `原始码 ${String(sample.adc).padStart(3, "0")}`);
+      setText("sysTime", sample.system_time);
+      setText("eventCount", String(sample.event_count).padStart(2, "0"));
+      setText("fault", faultNames[sample.fault_type] || `未知(${sample.fault_type})`);
+      setText("mode", faultNames[sample.fault_mode] || `模式${sample.fault_mode}`);
+      setText("freeze", sample.freeze ? "已冻结" : "实时");
+      setText("alarm", sample.alarm ? "报警" : "正常");
+      setText("sequence", String(sample.seq).padStart(3, "0"));
+    }
+
+    function drawChart(id, samples, series, minValue, maxValue, labelDecimals = 1) {
+      const canvas = el(id);
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      const width = Math.max(280, Math.floor(rect.width));
+      const height = 220;
+      if (canvas.width !== width * ratio || canvas.height !== height * ratio) {
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      const left = 38, right = 10, top = 10, bottom = 24;
+      const chartW = width - left - right, chartH = height - top - bottom;
+      ctx.strokeStyle = "#dfe4e8";
+      ctx.fillStyle = "#6c7782";
+      ctx.font = "11px Segoe UI, sans-serif";
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = top + chartH * i / 4;
+        ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(width - right, y); ctx.stroke();
+        const value = maxValue - (maxValue - minValue) * i / 4;
+        ctx.fillText(value.toFixed(labelDecimals), 2, y + 4);
+      }
+      if (samples.length < 2) return;
+      series.forEach(item => {
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        samples.forEach((sample, index) => {
+          const x = left + chartW * index / Math.max(1, samples.length - 1);
+          const raw = sample[item.key];
+          const y = top + chartH * (maxValue - raw) / (maxValue - minValue);
+          if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+      });
+    }
+
+    function drawTimeline() {
+      const canvas = el("timelineChart");
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      const width = Math.max(300, Math.floor(rect.width));
+      const height = 110;
+      if (canvas.width !== width * ratio || canvas.height !== height * ratio) {
+        canvas.width = width * ratio;
+        canvas.height = height * ratio;
+      }
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      const samples = viewMode === "history" ? replayData : liveHistory;
+      const left = 54, right = 8, chartW = width - left - right;
+      ctx.font = "11px Segoe UI, sans-serif";
+      ctx.fillStyle = "#66717d";
+      ctx.fillText("故障", 8, 25); ctx.fillText("暂停", 8, 55); ctx.fillText("冻结", 8, 85);
+      ctx.fillStyle = "#e2e6e9";
+      ctx.fillRect(left, 12, chartW, 16); ctx.fillRect(left, 42, chartW, 16); ctx.fillRect(left, 72, chartW, 16);
+      if (!samples.length) return;
+      const step = chartW / samples.length;
+      samples.forEach((sample, index) => {
+        const x = left + index * step;
+        const w = Math.max(1, step + 0.4);
+        if (sample.fault_type) {
+          const colors = ["#c33b32", "#b34f90", "#7b4db2", "#d05a2b", "#b12727", "#7b399b"];
+          ctx.fillStyle = colors[(sample.fault_type - 1) % colors.length];
+          ctx.fillRect(x, 12, w, 16);
+        }
+        if (!sample.running) { ctx.fillStyle = "#a86912"; ctx.fillRect(x, 42, w, 16); }
+        if (sample.freeze) { ctx.fillStyle = "#2767b1"; ctx.fillRect(x, 72, w, 16); }
+      });
+      if (viewMode === "history" && replayData.length) {
+        const x = left + chartW * replayIndex / Math.max(1, replayData.length - 1);
+        ctx.strokeStyle = "#17202a"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x, 5); ctx.lineTo(x, 96); ctx.stroke();
+      }
+    }
+
+    function chartSamples() {
+      if (viewMode === "history") {
+        return replayData.slice(Math.max(0, replayIndex - 239), replayIndex + 1);
+      }
+      return liveHistory.slice(-240);
+    }
+
+    function redraw() {
+      const samples = chartSamples();
+      const ampMax = Math.max(1.25, ...samples.map(item => Math.max(item.rms_volts, item.peak_volts))) + 0.05;
+      drawChart("amplitudeChart", samples, [{key:"rms_volts", color:"#2767b1"}, {key:"peak_volts", color:"#c33b32"}], 0, ampMax, 2);
+      drawChart("frequencyChart", samples, [{key:"freq", color:"#16835f"}], 45, 55, 1);
+      drawChart("adcChart", samples, [{key:"adc_volts", color:"#a86912"}], 0, 3.3, 2);
+      drawTimeline();
+    }
+
+    function stopReplay() {
+      if (replayTimer !== null) clearInterval(replayTimer);
+      replayTimer = null;
+      el("playReplay").textContent = "▶";
+      el("playReplay").title = "播放";
+    }
+
+    function deriveReplayEvents(samples) {
+      const result = [];
+      let previous = null;
+      samples.forEach((sample, index) => {
+        if (stateChanged(sample, previous)) result.push({sample, index});
+        previous = sample;
+      });
+      return result;
+    }
+
+    function showReplayAt(index) {
+      if (!replayData.length) return;
+      replayIndex = Math.max(0, Math.min(index, replayData.length - 1));
+      el("replayRange").value = replayIndex;
+      setText("replayPosition", `${replayIndex + 1} / ${replayData.length}`);
+      showSample(replayData[replayIndex]);
+      renderEvents(replayEvents.filter(item => item.index <= replayIndex).reverse());
+      updateBadges(lastStatus || {connection:"等待连接"}, replayData[replayIndex]);
+      redraw();
+    }
+
+    function startReplay() {
+      if (!replayData.length) return;
+      if (replayIndex >= replayData.length - 1) showReplayAt(0);
+      stopReplay();
+      const speed = Number(el("replaySpeed").value);
+      replayTimer = setInterval(() => {
+        if (replayIndex >= replayData.length - 1) { stopReplay(); return; }
+        showReplayAt(replayIndex + 1);
+      }, Math.max(80, 500 / speed));
+      el("playReplay").textContent = "❚❚";
+      el("playReplay").title = "暂停回放";
+    }
+
+    async function loadSessions() {
+      const response = await fetch("/api/sessions", {cache:"no-store"});
+      const data = await response.json();
+      currentSessionId = data.current_session_id;
+      const select = el("sessionSelect");
+      const selected = select.value;
+      select.innerHTML = "";
+      data.sessions.forEach(session => {
+        const option = document.createElement("option");
+        option.value = session.id;
+        const started = session.started_at.replace("T", " ").slice(0, 19);
+        option.textContent = `#${session.id}  ${started}  ${session.sample_count}点${session.ended_at ? "" : "  运行中"}`;
+        select.appendChild(option);
+      });
+      if ([...select.options].some(option => option.value === selected)) select.value = selected;
+      else if (currentSessionId !== null) select.value = String(currentSessionId);
+    }
+
+    async function loadSelectedSession() {
+      stopReplay();
+      const sessionId = Number(el("sessionSelect").value);
+      if (!sessionId) return;
+      el("loadSession").disabled = true;
+      setText("replayPosition", "载入中");
+      const samples = [];
+      let after = 0, hasMore = true;
+      try {
+        while (hasMore) {
+          const response = await fetch(`/api/history?session=${sessionId}&after=${after}&limit=2000`, {cache:"no-store"});
+          if (!response.ok) throw new Error("历史会话读取失败");
+          const data = await response.json();
+          samples.push(...data.samples);
+          hasMore = data.has_more;
+          if (data.samples.length) after = data.samples[data.samples.length - 1].db_id;
+          else hasMore = false;
+        }
+        replayData = samples;
+        replayEvents = deriveReplayEvents(samples);
+        el("replayRange").max = Math.max(0, samples.length - 1);
+        if (samples.length) showReplayAt(0);
+        else {
+          setText("replayPosition", "0 / 0");
+          renderEvents([]); redraw();
+        }
+      } finally {
+        el("loadSession").disabled = false;
+      }
+    }
+
+    async function setMode(mode) {
+      viewMode = mode;
+      el("liveMode").classList.toggle("active", mode === "live");
+      el("historyMode").classList.toggle("active", mode === "history");
+      el("historyControls").hidden = mode !== "history";
+      setText("trendTitle", mode === "live" ? "实时趋势" : "历史趋势");
+      stopReplay();
+      if (mode === "live") {
+        const latest = liveHistory[liveHistory.length - 1];
+        if (latest) showSample(latest);
+        renderEvents(liveEvents);
+        updateBadges(lastStatus || {connection:"等待连接"}, latest);
+        redraw();
+      } else {
+        await loadSessions();
+        await loadSelectedSession();
+      }
+    }
+
+    async function poll() {
+      try {
+        const response = await fetch(`/api/state?after=${lastId}`, {cache:"no-store"});
+        const data = await response.json();
+        lastStatus = data.status;
+        currentSessionId = data.status.session_id;
+        data.samples.forEach(sample => {
+          lastId = Math.max(lastId, sample.id);
+          const previous = liveHistory[liveHistory.length - 1];
+          liveHistory.push(sample);
+          if (liveHistory.length > 1200) liveHistory.shift();
+          if (stateChanged(sample, previous)) {
+            liveEvents.unshift({sample});
+            if (liveEvents.length > 50) liveEvents.pop();
+          }
+        });
+        const latest = liveHistory[liveHistory.length - 1];
+        if (viewMode === "live" && latest) {
+          showSample(latest);
+          renderEvents(liveEvents);
+          redraw();
+        }
+        updateBadges(data.status, viewMode === "history" && replayData.length ? replayData[replayIndex] : latest);
+        setText("checksumErrors", data.status.checksum_errors);
+        setText("missingFrames", data.status.missing_frames);
+        setText("frameCounts", `${data.status.valid} / ${data.status.received}`);
+      } catch (error) {
+        const connection = el("connection");
+        connection.textContent = "本地服务中断";
+        connection.className = "badge bad";
+      }
+    }
+
+    el("liveMode").addEventListener("click", () => setMode("live"));
+    el("historyMode").addEventListener("click", () => setMode("history"));
+    el("loadSession").addEventListener("click", loadSelectedSession);
+    el("sessionSelect").addEventListener("change", loadSelectedSession);
+    el("playReplay").addEventListener("click", () => replayTimer === null ? startReplay() : stopReplay());
+    el("replayRange").addEventListener("input", event => { stopReplay(); showReplayAt(Number(event.target.value)); });
+    el("replaySpeed").addEventListener("change", () => { if (replayTimer !== null) startReplay(); });
+    el("openReport").addEventListener("click", () => {
+      const sessionId = viewMode === "history" ? Number(el("sessionSelect").value) : currentSessionId;
+      if (sessionId) window.open(`/report?session=${sessionId}`, "_blank", "noopener");
+    });
+    window.addEventListener("resize", redraw);
+    setInterval(poll, 500);
+    setInterval(loadSessions, 15000);
+    loadSessions().catch(() => {});
+    poll();
+  </script>
+</body>
+</html>

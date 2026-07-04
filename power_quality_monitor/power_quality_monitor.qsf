@@ -1,0 +1,245 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 2025  Altera Corporation. All rights reserved.
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and any partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, the Altera Quartus Prime License Agreement,
+# the Altera IP License Agreement, or other applicable license
+# agreement, including, without limitation, that your use is for
+# the sole purpose of programming logic devices manufactured by
+# Altera and sold by Altera or its authorized distributors.  Please
+# refer to the Altera Software License Subscription Agreements 
+# on the Quartus Prime software download page.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus Prime
+# Version 25.1std.0 Build 1129 10/21/2025 SC Lite Edition
+# Date created = 13:30:52  June 08, 2026
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		power_quality_monitor_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Intel recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus Prime software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "MAX 10"
+set_global_assignment -name DEVICE 10M08SAM153I7G
+set_global_assignment -name TOP_LEVEL_ENTITY power_quality_monitor
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION 25.1STD.0
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "13:30:52  JUNE 08, 2026"
+set_global_assignment -name LAST_QUARTUS_VERSION "25.1std.0 Lite Edition"
+set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name MIN_CORE_JUNCTION_TEMP "-40"
+set_global_assignment -name MAX_CORE_JUNCTION_TEMP 100
+set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 256
+set_global_assignment -name EDA_SIMULATION_TOOL "QuestaSim (Verilog)"
+set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
+
+# LCD driver sub-modules (from lab13_picture_display reference architecture)
+
+set_global_assignment -name EDA_GENERATE_FUNCTIONAL_NETLIST OFF -section_id eda_board_design_timing
+set_global_assignment -name EDA_GENERATE_FUNCTIONAL_NETLIST OFF -section_id eda_board_design_symbol
+set_global_assignment -name EDA_GENERATE_FUNCTIONAL_NETLIST OFF -section_id eda_board_design_signal_integrity
+set_global_assignment -name EDA_GENERATE_FUNCTIONAL_NETLIST OFF -section_id eda_board_design_boundary_scan
+
+# ADC081S101 SPI Interface
+set_location_assignment PIN_B7 -to adc_cs_n
+set_location_assignment PIN_C8 -to adc_sdata
+set_location_assignment PIN_B8 -to adc_sclk
+
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to adc_cs_n
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to adc_sdata
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to adc_sclk
+
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+
+#============================================================
+# Clock & Reset
+#============================================================
+set_location_assignment PIN_J5 -to clk_12m
+set_location_assignment PIN_J9 -to rst_n
+
+#============================================================
+# DAC081S101 (SPI)
+#============================================================
+set_location_assignment PIN_D10 -to dac_sync_n
+set_location_assignment PIN_A9 -to dac_sclk
+set_location_assignment PIN_A11 -to dac_sdi
+
+#============================================================
+# 74HC595 Cascade Driver (8-digit 7-Segment Display)
+#============================================================
+set_location_assignment PIN_A14 -to rck_595
+set_location_assignment PIN_B15 -to din_595
+
+#============================================================
+# 2.4" SPI RGB LCD (ST7789V) — 修正后，与老师代码一致
+#============================================================
+set_location_assignment PIN_D7 -to lcd_blk
+set_location_assignment PIN_P15 -to lcd_rst
+set_location_assignment PIN_R14 -to lcd_dc
+set_location_assignment PIN_P12 -to lcd_mosi
+set_location_assignment PIN_R11 -to lcd_sclk
+set_location_assignment PIN_R9 -to lcd_cs
+
+#============================================================
+# Debug LEDs (LED1~8)
+#============================================================
+set_location_assignment PIN_N15 -to led[0]
+set_location_assignment PIN_N14 -to led[1]
+set_location_assignment PIN_M14 -to led[2]
+set_location_assignment PIN_M12 -to led[3]
+set_location_assignment PIN_L15 -to led[4]
+set_location_assignment PIN_K12 -to led[5]
+set_location_assignment PIN_L11 -to led[6]
+set_location_assignment PIN_K11 -to led[7]
+
+#============================================================
+# DIP Switches (SW1~4)
+#============================================================
+set_location_assignment PIN_J12 -to sw[0]
+set_location_assignment PIN_H11 -to sw[1]
+set_location_assignment PIN_H12 -to sw[2]
+set_location_assignment PIN_H13 -to sw[3]
+
+#============================================================
+# Push Buttons (KEY2~4, KEY1=J9 used as rst_n)
+#============================================================
+set_location_assignment PIN_K14 -to key2
+set_location_assignment PIN_J11 -to key3
+set_location_assignment PIN_J14 -to key4
+
+#============================================================
+# 4x4 Matrix Keyboard (Row=output, Col=input)
+#============================================================
+set_location_assignment PIN_P9 -to row[0]
+set_location_assignment PIN_P8 -to row[1]
+set_location_assignment PIN_R7 -to row[2]
+set_location_assignment PIN_P7 -to row[3]
+set_location_assignment PIN_P4 -to col[0]
+set_location_assignment PIN_L7 -to col[1]
+set_location_assignment PIN_R5 -to col[2]
+set_location_assignment PIN_P6 -to col[3]
+
+#============================================================
+# Buzzer (S8050 driven, active high)
+#============================================================
+set_location_assignment PIN_B14 -to buzzer
+
+#============================================================
+# I2C (AT24C02 + shared bus sensors)
+#============================================================
+set_location_assignment PIN_M4 -to i2c_scl
+set_location_assignment PIN_P3 -to i2c_sda
+
+#============================================================
+# UART - CH340 (board signal names)
+#============================================================
+set_location_assignment PIN_B4 -to txd_ch340
+set_location_assignment PIN_A5 -to rxd_ch340
+
+#============================================================
+# UART - WiFi Module (board signal names)
+#============================================================
+set_location_assignment PIN_A7 -to txd_wifi
+set_location_assignment PIN_B6 -to rxd_wifi
+
+#============================================================
+# IO Standard (3.3-V LVTTL for all)
+#============================================================
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk_12m
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to rst_n
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to dac_sync_n
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to dac_sclk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to dac_sdi
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to rck_595
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sclk_595
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to din_595
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to lcd_dc
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to lcd_rst
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to lcd_blk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to lcd_cs
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to lcd_mosi
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to lcd_sclk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to led[*]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sw[*]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to key2
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to key3
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to key4
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to row[*]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to col[*]
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to buzzer
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to i2c_scl
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to i2c_sda
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to txd_ch340
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to rxd_ch340
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to txd_wifi
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to rxd_wifi
+
+#============================================================
+# Weak Pull-Up (Required for open-drain I2C and keyboard columns)
+#============================================================
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to col[0]
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to col[1]
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to col[2]
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to col[3]
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to i2c_scl
+set_instance_assignment -name WEAK_PULL_UP_RESISTOR ON -to i2c_sda
+
+set_location_assignment PIN_B13 -to sclk_595
+
+set_global_assignment -name VERILOG_FILE source/lcd_write.v
+set_global_assignment -name VERILOG_FILE source/lcd_init.v
+set_global_assignment -name VERILOG_FILE source/control.v
+set_global_assignment -name VERILOG_FILE source/lcd_show_pic.v
+set_global_assignment -name VERILOG_FILE source/ui_template.v
+set_global_assignment -name VERILOG_FILE source/pic_ram.v
+set_global_assignment -name VERILOG_FILE power_quality_monitor.v
+set_global_assignment -name VERILOG_FILE pll_clock.v
+set_global_assignment -name VERILOG_FILE waveform_gen.v
+set_global_assignment -name VERILOG_FILE dac081s101_driver.v
+set_global_assignment -name VERILOG_FILE adc081s101_driver.v
+set_global_assignment -name VERILOG_FILE rms_calculator.v
+set_global_assignment -name VERILOG_FILE isqrt_16bit.v
+set_global_assignment -name VERILOG_FILE freq_detector.v
+set_global_assignment -name VERILOG_FILE peak_detector.v
+set_global_assignment -name VERILOG_FILE anomaly_detector.v
+set_global_assignment -name VERILOG_FILE freeze_controller.v
+set_global_assignment -name VERILOG_FILE wave_buffer.v
+set_global_assignment -name VERILOG_FILE lcd_driver.v
+set_global_assignment -name VERILOG_FILE event_logger.v
+set_global_assignment -name VERILOG_FILE i2c_master.v
+set_global_assignment -name VERILOG_FILE key_scan.v
+set_global_assignment -name VERILOG_FILE buzzer_driver.v
+set_global_assignment -name VERILOG_FILE seg_display_8bit.v
+set_global_assignment -name VERILOG_FILE hc595_driver.v
+set_global_assignment -name VERILOG_FILE uart_tx.v
+set_global_assignment -name VERILOG_FILE wifi_telemetry_tx.v
+set_global_assignment -name SDC_FILE power_quality_monitor.sdc
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
+set_global_assignment -name FLOW_ENABLE_POWER_ANALYZER ON
+set_global_assignment -name POWER_DEFAULT_INPUT_IO_TOGGLE_RATE "12.5 %"
+
+
+
+
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

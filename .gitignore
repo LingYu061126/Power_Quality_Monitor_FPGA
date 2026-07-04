@@ -1,0 +1,84 @@
+# Quartus generated directories
+**/db/
+**/incremental_db/
+**/output_files/
+**/simulation/
+**/greybox_tmp/
+**/hc_output/
+
+# Quartus generated reports and programming files
+**/*.rpt
+**/*.summary
+**/*.smsg
+**/*.done
+**/*.jdi
+**/*.sof
+**/*.pof
+**/*.qws
+**/*.qdf
+**/*.qmsg
+**/*.pin
+**/*.sld
+**/*.vo
+**/*.cmp
+**/*.eqn
+
+# ModelSim / Questa generated files
+**/work/
+**/transcript
+**/*.wlf
+**/*.vcd
+
+# Python generated files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# WiFi monitor runtime data
+wifi_monitor/data/
+**/power_quality_*.csv
+*.db
+*.sqlite
+*.sqlite3
+
+# Debug captures and local experiment data
+*.csv
+*.stp
+adc_debug*.pdf
+
+# Archives and local backups
+*.zip
+*.bak
+*_backup*
+*备份*
+shuDianXiangMu2_backup_*/
+第五组创意项目_*/
+lab13_picture_display/
+
+# Reports, guide books, screenshots and local formatting scratch files.
+# Add sanitized documents explicitly with git add -f when you really want them public.
+*.docx
+*.pptx
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.emf
+粘贴的图像*
+check_*.json
+target_format*
+ref_format*
+extract_format*.py
+apply_format.py
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*~
+*.tmp
+*.swp
+*.swo
+
+# Optional local Quartus project
+Game/
