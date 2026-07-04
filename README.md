@@ -6,7 +6,6 @@
 
 - `power_quality_monitor/`：电能质量监测与故障记录 Quartus 工程。
 - `wifi_monitor/`：电脑端 WiFi/TCP 数据接收、网页监控、SQLite 记录和 CSV 导出程序。
-- `Game/`：比赛计分系统 Quartus 工程，使用核心板按键和底板 8 位数码管。
 - `docs/`：硬件引脚、使用步骤、WiFi 数据协议和 GitHub 上传说明。
 
 ## 电能质量项目功能
@@ -73,9 +72,6 @@ python3 monitor.py --demo
 - [WiFi 遥测协议](docs/wifi_protocol.md)
 - [GitHub 上传说明](docs/github_upload.md)
 
-## 仓库维护说明
-
-`.gitignore` 已默认排除 Quartus/ModelSim 生成目录、`.sof/.pof` 编程文件、WiFi 运行数据、CSV/SQLite 数据库、实验指导书、截图和个人报告备份。若需要发布编程文件，建议使用 GitHub Release，而不是直接提交到主分支。
 
 ## License
 
