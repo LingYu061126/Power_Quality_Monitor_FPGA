@@ -1,6 +1,6 @@
 # FPGA电能质量监测与故障记录系统
 
-本仓库整理了基于 STEP-MAX10M08 核心板和 STEP BaseBoard V4.0 底板完成的 FPGA 实验项目，主要包括电能质量监测系统、WiFi 本地监控程序，以及一个比赛计分系统示例工程。
+本仓库整理了基于 STEP-MAX10M08 核心板和 STEP BaseBoard V4.0 底板完成的 FPGA 实验项目，主要包括电能质量监测系统和WiFi 本地监控程序。
 
 ## 主要内容
 
@@ -73,4 +73,4 @@ python3 monitor.py --demo
 
 ## License
 
-MIT License. 课程报告、实验指导书、截图等第三方或个人文档默认不纳入本仓库源码授权范围。
+MIT License. 
