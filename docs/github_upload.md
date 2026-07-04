@@ -8,7 +8,6 @@
 
 - `power_quality_monitor/`
 - `wifi_monitor/`
-- `Game/`
 - `docs/`
 - `README.md`
 - `.gitignore`
@@ -66,12 +65,10 @@ git status --ignored --short
 ## 4. 首次提交
 
 ```bash
-git add README.md .gitignore .gitattributes LICENSE docs power_quality_monitor wifi_monitor Game
+git add README.md .gitignore .gitattributes LICENSE docs power_quality_monitor wifi_monitor
 git status --short
 git commit -m "Initial commit: FPGA power quality monitor"
 ```
-
-如果你只想上传电能质量项目和 WiFi 程序，不上传 `Game/`，把最后一条 `git add` 中的 `Game` 去掉。
 
 ## 5. 创建 GitHub 仓库
 
